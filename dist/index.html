@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="TMDB 데이터를 활용해 현재 극장에서 상영 중인 영화를 한눈에 살펴보세요."
+    />
+    <meta name="theme-color" content="#090909" />
+    <title>NOW/SCREEN — 현재 상영작</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="./script.js" defer></script>
+  </head>
+  <body>
+    <a id="skip-link" class="skip-link" href="#lobby-options">카테고리 메뉴로 바로가기</a>
+
+    <header class="site-header">
+      <a class="brand" href="#lobby" aria-label="NOW SCREEN 로비로 이동">
+        <span>NOW</span><span class="brand-slash">/</span><span>SCREEN</span>
+      </a>
+
+      <p id="header-category" class="header-category" hidden></p>
+      <button id="lobby-return" class="lobby-return" type="button" hidden>
+        <span aria-hidden="true">←</span> 로비로 돌아가기
+      </button>
+    </header>
+
+    <main id="lobby" class="lobby">
+      <div class="lobby-light lobby-light-left" aria-hidden="true"></div>
+      <div class="lobby-light lobby-light-right" aria-hidden="true"></div>
+
+      <div class="lobby-intro">
+        <p class="lobby-kicker"><span></span> NOW/SCREEN CINEMA</p>
+        <h1>어떤 영화를<br />찾고 계신가요?</h1>
+        <p class="lobby-description">
+          원하는 상영관을 선택하세요.<br />지금 주목할 영화를 한눈에 안내해 드립니다.
+        </p>
+      </div>
+
+      <div id="lobby-options" class="lobby-grid" aria-label="영화 카테고리 선택">
+        <button class="lobby-card" type="button" data-category="now_playing">
+          <span class="lobby-card-number">01</span>
+          <span class="lobby-card-icon" aria-hidden="true">▶</span>
+          <span class="lobby-card-copy">
+            <span class="lobby-card-kicker">NOW PLAYING</span>
+            <strong>현재상영 영화</strong>
+            <span>오늘 극장에서 만날 수 있는 작품</span>
+          </span>
+          <span class="lobby-card-arrow" aria-hidden="true">↗</span>
+        </button>
+
+        <button class="lobby-card" type="button" data-category="popular">
+          <span class="lobby-card-number">02</span>
+          <span class="lobby-card-icon" aria-hidden="true">●</span>
+          <span class="lobby-card-copy">
+            <span class="lobby-card-kicker">POPULAR</span>
+            <strong>인기 영화</strong>
+            <span>지금 가장 많은 관심을 받는 작품</span>
+          </span>
+          <span class="lobby-card-arrow" aria-hidden="true">↗</span>
+        </button>
+
+        <button class="lobby-card" type="button" data-category="top_rated">
+          <span class="lobby-card-number">03</span>
+          <span class="lobby-card-icon" aria-hidden="true">★</span>
+          <span class="lobby-card-copy">
+            <span class="lobby-card-kicker">TOP RATED</span>
+            <strong>최고평점 영화</strong>
+            <span>관객에게 높은 평가를 받은 작품</span>
+          </span>
+          <span class="lobby-card-arrow" aria-hidden="true">↗</span>
+        </button>
+
+        <button class="lobby-card" type="button" data-category="upcoming">
+          <span class="lobby-card-number">04</span>
+          <span class="lobby-card-icon" aria-hidden="true">＋</span>
+          <span class="lobby-card-copy">
+            <span class="lobby-card-kicker">UPCOMING</span>
+            <strong>개봉예정 영화</strong>
+            <span>곧 극장에서 만나게 될 기대작</span>
+          </span>
+          <span class="lobby-card-arrow" aria-hidden="true">↗</span>
+        </button>
+      </div>
+
+      <p class="lobby-note">SELECT A THEATER · 영화관을 선택해 입장하세요</p>
+    </main>
+
+    <main id="movie-app" hidden>
+      <section id="hero" class="hero" aria-labelledby="hero-title">
+        <div class="hero-backdrop" aria-hidden="true"></div>
+        <div class="hero-shade" aria-hidden="true"></div>
+
+        <div class="hero-content">
+          <p id="hero-eyebrow" class="eyebrow"><span class="live-dot"></span><span>NOW PLAYING IN KOREA</span></p>
+          <h1 id="hero-title">오늘, 극장에서<br />만날 이야기</h1>
+          <p id="hero-overview" class="hero-overview">
+            현재 상영 중인 영화를 불러오고 있습니다.
+          </p>
+          <div class="hero-actions">
+            <button id="hero-detail-button" class="button button-primary" type="button" disabled>
+              <span aria-hidden="true">▶</span> 자세히 보기
+            </button>
+            <a id="movie-list-link" class="button button-secondary" href="#movie-list">전체 영화 보기</a>
+          </div>
+        </div>
+
+        <div id="hero-index" class="hero-index" aria-hidden="true">01</div>
+      </section>
+
+      <section id="movie-list" class="movie-section" aria-labelledby="section-title">
+        <div class="section-heading">
+          <div>
+            <p id="section-kicker" class="section-kicker">IN THEATERS NOW</p>
+            <h2 id="section-title">지금 상영 중</h2>
+          </div>
+
+          <label class="search-box" for="movie-search">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-4-4"></path>
+            </svg>
+            <span class="sr-only">영화 제목 검색</span>
+            <input
+              id="movie-search"
+              type="search"
+              placeholder="영화 제목 검색"
+              autocomplete="off"
+            />
+          </label>
+        </div>
+
+        <aside class="adult-flag-notice" aria-label="성인 콘텐츠 플래그 안내">
+          <span class="notice-icon" aria-hidden="true">i</span>
+          <p>
+            <strong>콘텐츠 안내</strong>
+            <code>ADULT FLAGGED</code> 표시는 TMDB의 성인 콘텐츠 플래그이며,
+            국내 영화 관람등급과는 다릅니다.
+          </p>
+        </aside>
+
+        <div class="result-meta">
+          <p id="result-count" aria-live="polite">영화 정보를 불러오는 중...</p>
+          <button id="refresh-button" class="text-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 6v5h-5"></path>
+              <path d="M4 18v-5h5"></path>
+              <path d="M18.2 9A7 7 0 0 0 6.7 6.7L4 11"></path>
+              <path d="M5.8 15A7 7 0 0 0 17.3 17.3L20 13"></path>
+            </svg>
+            새로고침
+          </button>
+        </div>
+
+        <div id="movie-grid" class="movie-grid" aria-live="polite" aria-busy="true"></div>
+
+        <div id="empty-state" class="empty-state" hidden>
+          <span aria-hidden="true">⌕</span>
+          <h3>검색 결과가 없습니다</h3>
+          <p>다른 제목으로 다시 검색해 보세요.</p>
+        </div>
+
+        <div id="error-state" class="error-state" hidden>
+          <p class="error-code">CONNECTION ERROR</p>
+          <h3>영화 정보를 불러오지 못했습니다.</h3>
+          <p id="error-message">잠시 후 다시 시도해 주세요.</p>
+          <button id="retry-button" class="button button-primary" type="button">다시 시도</button>
+        </div>
+      </section>
+
+      <section id="about" class="about-section" aria-label="서비스 소개">
+        <p class="about-number">01</p>
+        <div>
+          <p class="section-kicker">YOUR CINEMA GUIDE</p>
+          <h2>오늘의 극장,<br />한눈에.</h2>
+        </div>
+        <p class="about-copy">
+          현재 상영작부터 인기작, 높은 평점의 작품과 개봉 예정작까지 확인하세요.
+          영화 포스터와 제목, 개봉일, 관객 평점을 한곳에 모았습니다.
+        </p>
+      </section>
+    </main>
+
+    <footer id="site-footer" hidden>
+      <a class="brand brand-small" href="#lobby"><span>NOW</span><span class="brand-slash">/</span><span>SCREEN</span></a>
+      <p>영화 정보는 TMDB에서 제공됩니다.</p>
+      <p>© <span id="current-year"></span> NOW/SCREEN</p>
+    </footer>
+
+    <dialog id="movie-dialog" class="movie-dialog">
+      <button id="dialog-close" class="dialog-close" type="button" aria-label="상세 정보 닫기">×</button>
+      <div id="dialog-backdrop" class="dialog-backdrop"></div>
+      <div class="dialog-content">
+        <p class="dialog-label">NOW PLAYING</p>
+        <h2 id="dialog-title"></h2>
+        <div class="dialog-meta">
+          <span id="dialog-rating"></span>
+          <span id="dialog-date"></span>
+          <span id="dialog-adult"></span>
+        </div>
+        <p id="dialog-overview"></p>
+      </div>
+    </dialog>
+  </body>
+</html>
