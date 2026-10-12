@@ -1,7 +1,7 @@
 const MOVIES_API_URL = "/api/movies";
 const TRAILER_API_URL = "/api/trailer";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
-const DEFAULT_LANGUAGE = "en-US";
+const DEFAULT_LANGUAGE = "ko-KR";
 const SUPPORTED_LANGUAGES = new Set(["ko-KR", "en-US"]);
 const HOVER_PREVIEW_DELAY = 600;
 const hoverPreviewMedia = window.matchMedia("(hover: hover) and (pointer: fine)");
@@ -216,30 +216,13 @@ const elements = {
 let movies = [];
 let featuredMovie = null;
 let currentCategory = "now_playing";
-let currentLanguage = getStoredLanguage();
+let currentLanguage = DEFAULT_LANGUAGE;
 let activeRequest = null;
 let previewTimer = null;
 let previewCandidate = null;
 let activePreview = null;
 let trailerDialogToken = 0;
 const trailerCache = new Map();
-
-function getStoredLanguage() {
-  try {
-    const storedLanguage = localStorage.getItem("movie-language");
-    return SUPPORTED_LANGUAGES.has(storedLanguage) ? storedLanguage : DEFAULT_LANGUAGE;
-  } catch {
-    return DEFAULT_LANGUAGE;
-  }
-}
-
-function storeLanguage(language) {
-  try {
-    localStorage.setItem("movie-language", language);
-  } catch {
-    // The language still works for this session when storage is unavailable.
-  }
-}
 
 function t(key, replacements = {}) {
   const template = UI_TRANSLATIONS[currentLanguage][key] || key;
@@ -793,7 +776,6 @@ elements.languageButtons.forEach((button) => {
     stopActivePreview();
     closeTrailerDialog();
     currentLanguage = nextLanguage;
-    storeLanguage(currentLanguage);
     updateLanguageUI();
 
     if (!elements.movieApp.hidden) {
