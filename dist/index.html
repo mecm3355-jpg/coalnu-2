@@ -230,5 +230,22 @@
         <p id="dialog-overview"></p>
       </div>
     </dialog>
+
+    <dialog id="trailer-dialog" class="trailer-dialog" aria-labelledby="trailer-title">
+      <button
+        id="trailer-close"
+        class="dialog-close trailer-close"
+        type="button"
+        aria-label="예고편 닫기"
+        data-i18n-aria-label="trailerCloseAriaLabel"
+      >×</button>
+      <div class="trailer-dialog-header">
+        <p class="dialog-label" data-i18n="trailerDialogLabel">예고편</p>
+        <h2 id="trailer-title"></h2>
+      </div>
+      <div id="trailer-player" class="trailer-player">
+        <p id="trailer-status" class="trailer-status" aria-live="polite"></p>
+      </div>
+    </dialog>
   </body>
 </html>

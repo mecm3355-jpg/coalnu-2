@@ -820,16 +820,23 @@ body.is-lobby .site-header {
   min-width: 0;
 }
 
+.poster-shell {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  aspect-ratio: 2 / 3;
+}
+
 .poster-button {
   position: relative;
   display: block;
   width: 100%;
+  height: 100%;
   padding: 0;
   overflow: hidden;
   border: 0;
   background: var(--surface);
   cursor: pointer;
-  aspect-ratio: 2 / 3;
 }
 
 .poster-button::after {
@@ -906,6 +913,71 @@ body.is-lobby .site-header {
   height: 34px;
   border: 1px solid rgba(255, 255, 255, 0.75);
   border-radius: 50%;
+}
+
+.card-preview {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.card-preview.is-previewing {
+  opacity: 1;
+}
+
+.teaser-preview-frame,
+.trailer-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.teaser-preview-frame {
+  pointer-events: none;
+}
+
+.trailer-play-button {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0 0 0 3px;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+  background: rgba(229, 9, 20, 0.9);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.42);
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0;
+  transform: translate(-50%, -42%) scale(0.9);
+  transition: opacity 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.poster-shell:hover .trailer-play-button,
+.trailer-play-button:focus-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.trailer-play-button:hover,
+.trailer-play-button:focus-visible {
+  background: #f51b26;
+  outline: 0;
+}
+
+.trailer-play-button:focus-visible {
+  box-shadow: 0 0 0 4px #fff, 0 8px 28px rgba(0, 0, 0, 0.42);
 }
 
 .movie-info {
@@ -1235,6 +1307,71 @@ footer p {
   line-height: 1.8;
 }
 
+.trailer-dialog {
+  width: min(960px, calc(100% - 32px));
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0;
+  background: #080808;
+  color: var(--text);
+}
+
+.trailer-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(8px);
+}
+
+.trailer-dialog-header {
+  padding: 22px 72px 18px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.trailer-dialog-header .dialog-label {
+  margin-bottom: 7px;
+}
+
+.trailer-dialog-header h2 {
+  margin: 0;
+  overflow: hidden;
+  font-size: clamp(1.15rem, 2.6vw, 1.8rem);
+  letter-spacing: -0.035em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trailer-close {
+  top: 17px;
+}
+
+.trailer-player {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  background: #000;
+  aspect-ratio: 16 / 9;
+}
+
+.trailer-status {
+  margin: 0;
+  padding: 24px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.trailer-status.is-error {
+  color: #ff868c;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .trailer-play-button {
+    width: 50px;
+    height: 50px;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
 @media (max-width: 1080px) {
   .site-header {
     padding-right: 24px;
@@ -1522,6 +1659,21 @@ footer p {
 
   .dialog-content {
     padding: 26px 22px 32px;
+  }
+
+  .trailer-dialog {
+    width: calc(100% - 20px);
+  }
+
+  .trailer-dialog-header {
+    padding: 18px 62px 15px 18px;
+  }
+
+  .trailer-close {
+    top: 10px;
+    right: 10px;
+    width: 38px;
+    height: 38px;
   }
 }
 

@@ -1,6 +1,6 @@
 # NOW/SCREEN
 
-영화관 로비에서 카테고리를 선택하면 TMDB API를 이용해 현재 상영작, 인기 영화, 최고 평점 영화, 개봉 예정 영화의 포스터와 제목을 보여주는 웹사이트입니다. 상단의 한글/English 버튼으로 전체 화면 문구와 영화 제목·줄거리 언어를 함께 전환할 수 있습니다. 한글 모드에서 TMDB가 한국어 제목을 제공하지 않는 영화는 원제와 함께 `한국어 제목 미제공` 안내를 표시합니다. TMDB API 키는 브라우저에 노출되지 않도록 Vercel Function에서만 사용합니다.
+영화관 로비에서 카테고리를 선택하면 TMDB API를 이용해 현재 상영작, 인기 영화, 최고 평점 영화, 개봉 예정 영화의 포스터와 제목을 보여주는 웹사이트입니다. 상단의 한글/English 버튼으로 전체 화면 문구와 영화 제목·줄거리 언어를 함께 전환할 수 있습니다. 한글 모드에서 TMDB가 한국어 제목을 제공하지 않는 영화는 원제와 함께 `한국어 제목 미제공` 안내를 표시합니다. PC에서는 영화 카드에 마우스를 잠시 올리면 음소거 티저가 재생되고, 재생 버튼을 누르면 정식 트레일러 팝업이 열립니다. 모바일에서는 자동 미리보기 없이 재생 버튼만 제공합니다. TMDB API 키는 브라우저에 노출되지 않도록 Vercel Function에서만 사용합니다.
 
 ## 로컬 실행
 
@@ -25,14 +25,15 @@ npx vercel dev
 3. Production, Preview, Development 중 필요한 환경을 선택합니다.
 4. 배포하거나 환경 변수 등록 후 재배포합니다.
 
-`vercel.json`이 정적 파일 폴더를 `dist`로 지정하며, `/api/movies` 요청은 `api/movies.mjs`가 처리합니다.
+`vercel.json`이 정적 파일 폴더를 `dist`로 지정하며, `/api/movies`와 `/api/trailer` 요청은 Vercel Functions가 처리합니다.
 
 ## 파일 구성
 
 - `dist/index.html`: 페이지 구조
 - `dist/style.css`: 반응형 디자인
-- `dist/script.js`: 서버 API 연동, 탭 전환, 검색, 상세 팝업
+- `dist/script.js`: 서버 API 연동, 탭 전환, 검색, 상세·예고편 팝업, PC 티저 미리보기
 - `api/movies.mjs`: TMDB API 키를 사용하는 Vercel Function
+- `api/trailer.mjs`: 영화별 티저·트레일러를 선택하는 Vercel Function
 - `vercel.json`: Vercel 배포 설정
 - `.env.example`: 필요한 환경 변수 이름 예시
 

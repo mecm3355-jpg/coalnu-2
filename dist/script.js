@@ -1,7 +1,10 @@
 const MOVIES_API_URL = "/api/movies";
+const TRAILER_API_URL = "/api/trailer";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 const DEFAULT_LANGUAGE = "en-US";
 const SUPPORTED_LANGUAGES = new Set(["ko-KR", "en-US"]);
+const HOVER_PREVIEW_DELAY = 600;
+const hoverPreviewMedia = window.matchMedia("(hover: hover) and (pointer: fine)");
 
 const UI_TRANSLATIONS = {
   "ko-KR": {
@@ -33,6 +36,15 @@ const UI_TRANSLATIONS = {
     aboutCopy: "현재 상영작부터 인기작, 높은 평점의 작품과 개봉 예정작까지 확인하세요. 영화 포스터와 제목, 개봉일, 관객 평점을 한곳에 모았습니다.",
     footerCredit: "영화 정보는 TMDB에서 제공됩니다.",
     dialogCloseAriaLabel: "상세 정보 닫기",
+    trailerCloseAriaLabel: "예고편 닫기",
+    trailerDialogLabel: "예고편",
+    watchTrailer: "예고편 보기",
+    trailerPlayAriaLabel: "{title} 예고편 재생",
+    trailerPreviewTitle: "{title} 티저 미리보기",
+    trailerTitle: "{title} 예고편",
+    trailerLoading: "예고편을 불러오는 중...",
+    trailerUnavailable: "등록된 예고편이 없습니다.",
+    trailerRequestError: "예고편을 불러오지 못했습니다.",
     skipLobby: "카테고리 메뉴로 바로가기",
     skipMovies: "영화 목록으로 바로가기",
     lobbyDocumentTitle: "NOW/SCREEN — 영화관 로비",
@@ -87,6 +99,15 @@ const UI_TRANSLATIONS = {
     aboutCopy: "Explore now-playing, popular, top-rated, and upcoming movies. Find posters, titles, release dates, and viewer ratings all in one place.",
     footerCredit: "Movie information is provided by TMDB.",
     dialogCloseAriaLabel: "Close movie details",
+    trailerCloseAriaLabel: "Close trailer",
+    trailerDialogLabel: "TRAILER",
+    watchTrailer: "Watch trailer",
+    trailerPlayAriaLabel: "Play trailer for {title}",
+    trailerPreviewTitle: "Teaser preview for {title}",
+    trailerTitle: "{title} Trailer",
+    trailerLoading: "Loading trailer...",
+    trailerUnavailable: "No trailer is available.",
+    trailerRequestError: "We couldn't load the trailer.",
     skipLobby: "Skip to category menu",
     skipMovies: "Skip to movie list",
     lobbyDocumentTitle: "NOW/SCREEN — Cinema Lobby",
@@ -185,6 +206,11 @@ const elements = {
   dialogDate: document.querySelector("#dialog-date"),
   dialogAdult: document.querySelector("#dialog-adult"),
   dialogOverview: document.querySelector("#dialog-overview"),
+  trailerDialog: document.querySelector("#trailer-dialog"),
+  trailerClose: document.querySelector("#trailer-close"),
+  trailerTitle: document.querySelector("#trailer-title"),
+  trailerPlayer: document.querySelector("#trailer-player"),
+  trailerStatus: document.querySelector("#trailer-status"),
 };
 
 let movies = [];
@@ -192,6 +218,11 @@ let featuredMovie = null;
 let currentCategory = "now_playing";
 let currentLanguage = getStoredLanguage();
 let activeRequest = null;
+let previewTimer = null;
+let previewCandidate = null;
+let activePreview = null;
+let trailerDialogToken = 0;
+const trailerCache = new Map();
 
 function getStoredLanguage() {
   try {
@@ -263,7 +294,7 @@ function updateLanguageUI() {
     button.querySelector("[data-category-description]").textContent = categoryText(categoryKey, "cardDescription");
   });
 
-  [elements.grid, elements.heroTitle, elements.heroOverview, elements.dialogTitle, elements.dialogOverview]
+  [elements.grid, elements.heroTitle, elements.heroOverview, elements.dialogTitle, elements.dialogOverview, elements.trailerTitle]
     .forEach((element) => { element.lang = contentLanguage; });
 
   const categoryKey = categoryFromHash();
@@ -322,9 +353,150 @@ function createPoster(movie) {
   return image;
 }
 
+function getTrailerData(movieId, language = currentLanguage) {
+  const cacheKey = `${movieId}:${language}`;
+  if (trailerCache.has(cacheKey)) return trailerCache.get(cacheKey);
+
+  const url = new URL(TRAILER_API_URL, window.location.origin);
+  url.searchParams.set("movieId", String(movieId));
+  url.searchParams.set("language", language);
+
+  const request = fetch(url)
+    .then((response) => {
+      if (!response.ok) throw new Error(`Trailer request failed (${response.status})`);
+      return response.json();
+    })
+    .catch((error) => {
+      trailerCache.delete(cacheKey);
+      throw error;
+    });
+
+  trailerCache.set(cacheKey, request);
+  return request;
+}
+
+function createYouTubeIframe(video, movie, isPreview = false) {
+  const iframe = document.createElement("iframe");
+  const embedUrl = new URL(`https://www.youtube-nocookie.com/embed/${video.key}`);
+  embedUrl.searchParams.set("autoplay", "1");
+  embedUrl.searchParams.set("playsinline", "1");
+  embedUrl.searchParams.set("rel", "0");
+
+  if (isPreview) {
+    embedUrl.searchParams.set("mute", "1");
+    embedUrl.searchParams.set("controls", "0");
+    embedUrl.searchParams.set("loop", "1");
+    embedUrl.searchParams.set("playlist", video.key);
+  } else {
+    embedUrl.searchParams.set("controls", "1");
+  }
+
+  iframe.className = isPreview ? "teaser-preview-frame" : "trailer-frame";
+  iframe.src = embedUrl.toString();
+  iframe.title = isPreview
+    ? t("trailerPreviewTitle", { title: movie.title })
+    : t("trailerTitle", { title: movie.title });
+  iframe.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+  iframe.referrerPolicy = "strict-origin-when-cross-origin";
+  iframe.allowFullscreen = !isPreview;
+  iframe.tabIndex = isPreview ? -1 : 0;
+  return iframe;
+}
+
+function stopActivePreview() {
+  if (previewTimer) window.clearTimeout(previewTimer);
+  previewTimer = null;
+  previewCandidate = null;
+
+  if (!activePreview) return;
+  activePreview.container.classList.remove("is-previewing");
+  activePreview.container.replaceChildren();
+  activePreview = null;
+}
+
+function cancelPreview(container) {
+  if (previewCandidate === container) {
+    if (previewTimer) window.clearTimeout(previewTimer);
+    previewTimer = null;
+    previewCandidate = null;
+  }
+
+  if (activePreview?.container === container) stopActivePreview();
+}
+
+function schedulePreview(container, movie) {
+  if (!hoverPreviewMedia.matches) return;
+
+  if (previewCandidate && previewCandidate !== container) stopActivePreview();
+  previewCandidate = container;
+  const requestedLanguage = currentLanguage;
+
+  previewTimer = window.setTimeout(async () => {
+    previewTimer = null;
+
+    try {
+      const data = await getTrailerData(movie.id, requestedLanguage);
+      if (
+        previewCandidate !== container
+        || !container.parentElement?.matches(":hover")
+        || requestedLanguage !== currentLanguage
+        || !data.teaser
+      ) return;
+
+      stopActivePreview();
+      container.append(createYouTubeIframe(data.teaser, movie, true));
+      container.classList.add("is-previewing");
+      activePreview = { container, movieId: movie.id };
+    } catch {
+      // Hover previews fail silently so the movie card remains usable.
+    }
+  }, HOVER_PREVIEW_DELAY);
+}
+
+function resetTrailerDialog() {
+  trailerDialogToken += 1;
+  elements.trailerPlayer.replaceChildren(elements.trailerStatus);
+  elements.trailerStatus.classList.remove("is-error");
+  elements.trailerStatus.textContent = "";
+}
+
+function closeTrailerDialog() {
+  if (elements.trailerDialog.open) elements.trailerDialog.close();
+  resetTrailerDialog();
+}
+
+async function openTrailerDialog(movie) {
+  stopActivePreview();
+  resetTrailerDialog();
+  const requestToken = trailerDialogToken;
+  elements.trailerTitle.textContent = t("trailerTitle", { title: movie.title });
+  elements.trailerStatus.textContent = t("trailerLoading");
+  elements.trailerDialog.showModal();
+
+  try {
+    const data = await getTrailerData(movie.id);
+    if (!elements.trailerDialog.open || requestToken !== trailerDialogToken) return;
+
+    if (!data.trailer) {
+      elements.trailerStatus.textContent = t("trailerUnavailable");
+      return;
+    }
+
+    elements.trailerPlayer.replaceChildren(createYouTubeIframe(data.trailer, movie));
+  } catch {
+    if (!elements.trailerDialog.open || requestToken !== trailerDialogToken) return;
+    elements.trailerStatus.classList.add("is-error");
+    elements.trailerStatus.textContent = t("trailerRequestError");
+  }
+}
+
 function createMovieCard(movie, index) {
   const article = document.createElement("article");
   article.className = "movie-card";
+  article.dataset.movieId = movie.id;
+
+  const posterShell = document.createElement("div");
+  posterShell.className = "poster-shell";
 
   const posterButton = document.createElement("button");
   posterButton.className = "poster-button";
@@ -343,10 +515,25 @@ function createMovieCard(movie, index) {
   const hoverIcon = document.createElement("span");
   hoverIcon.className = "card-hover-icon";
   hoverIcon.setAttribute("aria-hidden", "true");
-  hoverIcon.textContent = "▶";
+  hoverIcon.textContent = "+";
   hover.append(hoverLabel, hoverIcon);
 
   posterButton.append(createPoster(movie), rank, hover);
+
+  const preview = document.createElement("div");
+  preview.className = "card-preview";
+  preview.setAttribute("aria-hidden", "true");
+
+  const trailerButton = document.createElement("button");
+  trailerButton.className = "trailer-play-button";
+  trailerButton.type = "button";
+  trailerButton.setAttribute("aria-label", t("trailerPlayAriaLabel", { title: movie.title }));
+  trailerButton.innerHTML = `<span aria-hidden="true">▶</span><span class="sr-only">${t("watchTrailer")}</span>`;
+  trailerButton.addEventListener("click", () => openTrailerDialog(movie));
+
+  posterShell.append(posterButton, preview, trailerButton);
+  posterShell.addEventListener("pointerenter", () => schedulePreview(preview, movie));
+  posterShell.addEventListener("pointerleave", () => cancelPreview(preview));
 
   const info = document.createElement("div");
   info.className = "movie-info";
@@ -395,11 +582,12 @@ function createMovieCard(movie, index) {
   badges.append(adult, rating);
   meta.append(release, badges);
   info.append(title, titleTranslationNote, meta);
-  article.append(posterButton, info);
+  article.append(posterShell, info);
   return article;
 }
 
 function renderMovies(movieList) {
+  stopActivePreview();
   elements.grid.innerHTML = "";
   elements.grid.setAttribute("aria-busy", "false");
   elements.errorState.hidden = true;
@@ -478,6 +666,8 @@ function showLobby() {
   activeRequest = null;
   featuredMovie = null;
 
+  stopActivePreview();
+  closeTrailerDialog();
   if (elements.dialog.open) elements.dialog.close();
   elements.lobby.hidden = false;
   elements.movieApp.hidden = true;
@@ -518,6 +708,9 @@ function handleRoute() {
 async function loadMovies(categoryKey = currentCategory) {
   const category = CATEGORIES[categoryKey] || CATEGORIES.now_playing;
   currentCategory = CATEGORIES[categoryKey] ? categoryKey : "now_playing";
+
+  stopActivePreview();
+  closeTrailerDialog();
 
   activeRequest?.abort();
   const request = new AbortController();
@@ -597,6 +790,8 @@ elements.languageButtons.forEach((button) => {
     const nextLanguage = button.dataset.language;
     if (!SUPPORTED_LANGUAGES.has(nextLanguage) || nextLanguage === currentLanguage) return;
 
+    stopActivePreview();
+    closeTrailerDialog();
     currentLanguage = nextLanguage;
     storeLanguage(currentLanguage);
     updateLanguageUI();
@@ -638,6 +833,15 @@ elements.heroDetailButton.addEventListener("click", () => {
 elements.dialogClose.addEventListener("click", () => elements.dialog.close());
 elements.dialog.addEventListener("click", (event) => {
   if (event.target === elements.dialog) elements.dialog.close();
+});
+
+elements.trailerClose.addEventListener("click", closeTrailerDialog);
+elements.trailerDialog.addEventListener("click", (event) => {
+  if (event.target === elements.trailerDialog) closeTrailerDialog();
+});
+elements.trailerDialog.addEventListener("close", resetTrailerDialog);
+hoverPreviewMedia.addEventListener("change", (event) => {
+  if (!event.matches) stopActivePreview();
 });
 
 elements.retryButton.addEventListener("click", () => loadMovies(currentCategory));
