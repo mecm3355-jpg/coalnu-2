@@ -980,6 +980,17 @@ body.is-lobby .site-header {
   box-shadow: 0 0 0 4px #fff, 0 8px 28px rgba(0, 0, 0, 0.42);
 }
 
+.card-preview.is-previewing + .trailer-play-button {
+  border-color: rgba(255, 255, 255, 0.58);
+  background: rgba(5, 5, 5, 0.24);
+  opacity: 0.3;
+}
+
+.card-preview.is-previewing + .trailer-play-button:focus-visible {
+  background: rgba(229, 9, 20, 0.9);
+  opacity: 1;
+}
+
 .movie-info {
   padding-top: 14px;
 }
