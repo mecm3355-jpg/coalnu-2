@@ -25,16 +25,15 @@ npx vercel dev
 3. Production, Preview, Development 중 필요한 환경을 선택합니다.
 4. 배포하거나 환경 변수 등록 후 재배포합니다.
 
-`vercel.json`이 정적 파일 폴더를 `dist`로 지정하며, `/api/movies`와 `/api/trailer` 요청은 Vercel Functions가 처리합니다.
+루트의 정적 파일은 Vercel이 바로 배포하며, `/api/movies`와 `/api/trailer` 요청은 Vercel Functions가 처리합니다. Vercel 프로젝트의 **Output Directory**는 비워 둡니다.
 
 ## 파일 구성
 
-- `dist/index.html`: 페이지 구조
-- `dist/style.css`: 반응형 디자인
-- `dist/script.js`: 서버 API 연동, 탭 전환, 검색, 상세·예고편 팝업, PC 티저 미리보기
+- `index.html`: 페이지 구조
+- `style.css`: 반응형 디자인
+- `script.js`: 서버 API 연동, 탭 전환, 검색, 상세·예고편 팝업, PC 티저 미리보기
 - `api/movies.mjs`: TMDB API 키를 사용하는 Vercel Function
 - `api/trailer.mjs`: 영화별 티저·트레일러를 선택하는 Vercel Function
-- `vercel.json`: Vercel 배포 설정
 - `.env.example`: 필요한 환경 변수 이름 예시
 
 > 이전에 브라우저 코드에 포함했던 API 키는 더 이상 사용하지 말고 TMDB에서 교체한 뒤 새 키를 Vercel에 등록하세요.
