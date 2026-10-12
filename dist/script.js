@@ -46,6 +46,7 @@ const UI_TRANSLATIONS = {
     adultNoTitle: "TMDB에서 성인 콘텐츠로 표시하지 않은 작품입니다. 국내 관람등급과는 다릅니다.",
     adultYesAriaLabel: "TMDB 성인 콘텐츠 플래그: 예",
     adultNoAriaLabel: "TMDB 성인 콘텐츠 플래그: 아니요",
+    missingKoreanTitle: "한국어 제목 미제공",
     noRating: "평점 없음",
     noOverview: "등록된 줄거리가 없습니다.",
     searchResults: "“{query}” 검색 결과 {count}편",
@@ -99,6 +100,7 @@ const UI_TRANSLATIONS = {
     adultNoTitle: "TMDB does not flag this title as adult content. This is not an official theatrical age rating.",
     adultYesAriaLabel: "TMDB adult content flag: yes",
     adultNoAriaLabel: "TMDB adult content flag: no",
+    missingKoreanTitle: "Korean title unavailable",
     noRating: "No rating",
     noOverview: "No overview is available.",
     searchResults: "{count} results for “{query}”",
@@ -163,6 +165,7 @@ const elements = {
   retryButton: document.querySelector("#retry-button"),
   refreshButton: document.querySelector("#refresh-button"),
   heroTitle: document.querySelector("#hero-title"),
+  heroTitleNote: document.querySelector("#hero-title-note"),
   heroOverview: document.querySelector("#hero-overview"),
   heroBackdrop: document.querySelector(".hero-backdrop"),
   heroEyebrow: document.querySelector("#hero-eyebrow span:last-child"),
@@ -176,6 +179,7 @@ const elements = {
   dialogClose: document.querySelector("#dialog-close"),
   dialogBackdrop: document.querySelector("#dialog-backdrop"),
   dialogTitle: document.querySelector("#dialog-title"),
+  dialogTitleNote: document.querySelector("#dialog-title-note"),
   dialogLabel: document.querySelector(".dialog-label"),
   dialogRating: document.querySelector("#dialog-rating"),
   dialogDate: document.querySelector("#dialog-date"),
@@ -216,6 +220,16 @@ function t(key, replacements = {}) {
 
 function categoryText(categoryKey, field) {
   return CATEGORIES[categoryKey].translations[currentLanguage][field];
+}
+
+function isKoreanTitleMissing(movie) {
+  return currentLanguage === "ko-KR" && !/[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(movie.title || "");
+}
+
+function updateTitleTranslationNote(element, movie) {
+  const shouldShow = isKoreanTitleMissing(movie);
+  element.textContent = shouldShow ? t("missingKoreanTitle") : "";
+  element.hidden = !shouldShow;
 }
 
 function updateLanguageUI() {
@@ -342,6 +356,10 @@ function createMovieCard(movie, index) {
   title.textContent = movie.title;
   title.title = movie.title;
 
+  const titleTranslationNote = document.createElement("p");
+  titleTranslationNote.className = "title-translation-note title-translation-note-card";
+  updateTitleTranslationNote(titleTranslationNote, movie);
+
   const meta = document.createElement("p");
   meta.className = "movie-meta";
 
@@ -376,7 +394,7 @@ function createMovieCard(movie, index) {
 
   badges.append(adult, rating);
   meta.append(release, badges);
-  info.append(title, meta);
+  info.append(title, titleTranslationNote, meta);
   article.append(posterButton, info);
   return article;
 }
@@ -404,6 +422,7 @@ function renderMovies(movieList) {
 function updateHero(movie) {
   featuredMovie = movie;
   elements.heroTitle.textContent = movie.title;
+  updateTitleTranslationNote(elements.heroTitleNote, movie);
   elements.heroOverview.textContent =
     movie.overview || categoryText(currentCategory, "fallbackOverview");
   elements.heroDetailButton.disabled = false;
@@ -426,6 +445,7 @@ function updateHero(movie) {
 function openMovieDialog(movie) {
   elements.dialogLabel.textContent = categoryText(currentCategory, "eyebrow");
   elements.dialogTitle.textContent = movie.title;
+  updateTitleTranslationNote(elements.dialogTitleNote, movie);
   const missingRating = t("noRating");
   elements.dialogRating.textContent = `★ ${movie.vote_average ? movie.vote_average.toFixed(1) : missingRating}`;
   elements.dialogDate.textContent = formatReleaseDate(movie.release_date);
@@ -507,6 +527,7 @@ async function loadMovies(categoryKey = currentCategory) {
   featuredMovie = null;
   elements.heroDetailButton.disabled = true;
   elements.heroTitle.textContent = categoryText(currentCategory, "sectionTitle");
+  elements.heroTitleNote.hidden = true;
   elements.heroOverview.textContent = t("loadingCategory", {
     category: categoryText(currentCategory, "countLabel"),
   });
