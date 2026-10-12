@@ -330,7 +330,7 @@ body.is-lobby .site-header {
   letter-spacing: 0.17em;
 }
 
-.lobby-kicker span {
+.lobby-kicker-line {
   width: 34px;
   height: 2px;
   background: var(--accent);
