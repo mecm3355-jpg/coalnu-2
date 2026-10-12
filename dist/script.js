@@ -3,57 +3,144 @@ const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 const DEFAULT_LANGUAGE = "en-US";
 const SUPPORTED_LANGUAGES = new Set(["ko-KR", "en-US"]);
 
+const UI_TRANSLATIONS = {
+  "ko-KR": {
+    metaDescription: "TMDB 데이터를 활용해 현재 극장에서 상영 중인 영화를 한눈에 살펴보세요.",
+    brandAriaLabel: "NOW SCREEN 영화관 로비로 이동",
+    languageSwitcherAriaLabel: "사이트 언어 선택",
+    lobbyReturn: "로비로 돌아가기",
+    lobbyTitle: "어떤 영화를<br />찾고 계신가요?",
+    lobbyDescription: "원하는 상영관을 선택하세요.<br />지금 주목할 영화를 한눈에 안내해 드립니다.",
+    categorySelectionAriaLabel: "영화 카테고리 선택",
+    lobbyNote: "영화관을 선택해 입장하세요",
+    viewDetails: "자세히 보기",
+    viewAllMovies: "전체 영화 보기",
+    searchLabel: "영화 제목 검색",
+    searchPlaceholder: "영화 제목 검색",
+    adultNoticeAriaLabel: "성인 콘텐츠 플래그 안내",
+    contentNotice: "콘텐츠 안내",
+    adultNoticeDescription: "표시는 TMDB의 성인 콘텐츠 플래그이며, 국내 영화 관람등급과는 다릅니다.",
+    refresh: "새로고침",
+    emptyTitle: "검색 결과가 없습니다",
+    emptyDescription: "다른 제목으로 다시 검색해 보세요.",
+    errorCode: "연결 오류",
+    errorTitle: "영화 정보를 불러오지 못했습니다.",
+    retry: "다시 시도",
+    aboutAriaLabel: "서비스 소개",
+    aboutKicker: "나만의 영화 안내",
+    aboutTitle: "오늘의 극장,<br />한눈에.",
+    aboutCopy: "현재 상영작부터 인기작, 높은 평점의 작품과 개봉 예정작까지 확인하세요. 영화 포스터와 제목, 개봉일, 관객 평점을 한곳에 모았습니다.",
+    footerCredit: "영화 정보는 TMDB에서 제공됩니다.",
+    dialogCloseAriaLabel: "상세 정보 닫기",
+    skipLobby: "카테고리 메뉴로 바로가기",
+    skipMovies: "영화 목록으로 바로가기",
+    lobbyDocumentTitle: "NOW/SCREEN — 영화관 로비",
+    posterAlt: "{title} 포스터",
+    detailsAriaLabel: "{title} 상세 정보 보기",
+    cardDetails: "상세 보기",
+    release: "개봉일",
+    adultFlagged: "성인 콘텐츠 표시",
+    notFlagged: "성인 콘텐츠 미표시",
+    adultYesTitle: "TMDB에서 성인 콘텐츠로 표시한 작품입니다. 국내 관람등급과는 다릅니다.",
+    adultNoTitle: "TMDB에서 성인 콘텐츠로 표시하지 않은 작품입니다. 국내 관람등급과는 다릅니다.",
+    adultYesAriaLabel: "TMDB 성인 콘텐츠 플래그: 예",
+    adultNoAriaLabel: "TMDB 성인 콘텐츠 플래그: 아니요",
+    noRating: "평점 없음",
+    noOverview: "등록된 줄거리가 없습니다.",
+    searchResults: "“{query}” 검색 결과 {count}편",
+    categoryCount: "{category} {count}편",
+    loadingCategory: "{category} 정보를 불러오고 있습니다.",
+    loadingMovies: "영화 정보를 불러오는 중...",
+    requestError: "TMDB 요청 오류 ({status})",
+    noMovies: "표시할 {category}가 없습니다.",
+    loadFailed: "불러오기 실패",
+    defaultError: "잠시 후 다시 시도해 주세요.",
+  },
+  "en-US": {
+    metaDescription: "Browse movies now playing in theaters using data provided by TMDB.",
+    brandAriaLabel: "Go to the NOW SCREEN cinema lobby",
+    languageSwitcherAriaLabel: "Select site language",
+    lobbyReturn: "Back to lobby",
+    lobbyTitle: "What would you<br />like to watch?",
+    lobbyDescription: "Choose a theater section.<br />Discover the movies everyone is talking about.",
+    categorySelectionAriaLabel: "Select a movie category",
+    lobbyNote: "SELECT A THEATER TO ENTER",
+    viewDetails: "View details",
+    viewAllMovies: "View all movies",
+    searchLabel: "Search by movie title",
+    searchPlaceholder: "Search movie titles",
+    adultNoticeAriaLabel: "Adult content flag notice",
+    contentNotice: "Content notice",
+    adultNoticeDescription: "is TMDB's adult-content flag and is not an official theatrical age rating.",
+    refresh: "Refresh",
+    emptyTitle: "No results found",
+    emptyDescription: "Try searching with a different title.",
+    errorCode: "CONNECTION ERROR",
+    errorTitle: "We couldn't load the movies.",
+    retry: "Try again",
+    aboutAriaLabel: "About this service",
+    aboutKicker: "YOUR CINEMA GUIDE",
+    aboutTitle: "Today's cinema,<br />at a glance.",
+    aboutCopy: "Explore now-playing, popular, top-rated, and upcoming movies. Find posters, titles, release dates, and viewer ratings all in one place.",
+    footerCredit: "Movie information is provided by TMDB.",
+    dialogCloseAriaLabel: "Close movie details",
+    skipLobby: "Skip to category menu",
+    skipMovies: "Skip to movie list",
+    lobbyDocumentTitle: "NOW/SCREEN — Cinema Lobby",
+    posterAlt: "{title} poster",
+    detailsAriaLabel: "View details for {title}",
+    cardDetails: "View details",
+    release: "RELEASE",
+    adultFlagged: "ADULT FLAGGED",
+    notFlagged: "NOT FLAGGED",
+    adultYesTitle: "TMDB flags this title as adult content. This is not an official theatrical age rating.",
+    adultNoTitle: "TMDB does not flag this title as adult content. This is not an official theatrical age rating.",
+    adultYesAriaLabel: "TMDB adult content flag: yes",
+    adultNoAriaLabel: "TMDB adult content flag: no",
+    noRating: "No rating",
+    noOverview: "No overview is available.",
+    searchResults: "{count} results for “{query}”",
+    categoryCount: "{count} {category}",
+    loadingCategory: "Loading {category}...",
+    loadingMovies: "Loading movie information...",
+    requestError: "TMDB request failed ({status})",
+    noMovies: "No {category} are available.",
+    loadFailed: "Failed to load",
+    defaultError: "Please try again in a moment.",
+  },
+};
+
 const CATEGORIES = {
   now_playing: {
     endpoint: "now_playing",
     hash: "now-playing",
-    navLabel: "현재상영 영화",
-    sectionTitle: "지금 상영 중",
-    kicker: "IN THEATERS NOW",
-    eyebrow: "NOW PLAYING IN KOREA",
-    countLabel: "현재 상영작",
-    fallbackOverview: {
-      "ko-KR": "지금 극장에서 만나볼 수 있는 화제의 영화입니다.",
-      "en-US": "Discover a standout movie currently playing in theaters.",
+    translations: {
+      "ko-KR": { cardKicker: "현재 상영", navLabel: "현재상영 영화", cardDescription: "오늘 극장에서 만날 수 있는 작품", sectionTitle: "지금 상영 중", kicker: "현재 극장 상영작", eyebrow: "대한민국 극장 상영 중", countLabel: "현재 상영작", fallbackOverview: "지금 극장에서 만나볼 수 있는 화제의 영화입니다." },
+      "en-US": { cardKicker: "NOW PLAYING", navLabel: "Now Playing", cardDescription: "Movies you can see in theaters today", sectionTitle: "Now Playing", kicker: "IN THEATERS NOW", eyebrow: "NOW PLAYING IN KOREA", countLabel: "movies now playing", fallbackOverview: "Discover a standout movie currently playing in theaters." },
     },
   },
   popular: {
     endpoint: "popular",
     hash: "popular",
-    navLabel: "인기 영화",
-    sectionTitle: "지금 인기 있는 영화",
-    kicker: "TRENDING WITH VIEWERS",
-    eyebrow: "POPULAR MOVIES IN KOREA",
-    countLabel: "인기 영화",
-    fallbackOverview: {
-      "ko-KR": "지금 많은 관객이 관심 있게 보고 있는 영화입니다.",
-      "en-US": "Discover a movie attracting viewers around the world.",
+    translations: {
+      "ko-KR": { cardKicker: "인기작", navLabel: "인기 영화", cardDescription: "지금 가장 많은 관심을 받는 작품", sectionTitle: "지금 인기 있는 영화", kicker: "관객 인기작", eyebrow: "대한민국 인기 영화", countLabel: "인기 영화", fallbackOverview: "지금 많은 관객이 관심 있게 보고 있는 영화입니다." },
+      "en-US": { cardKicker: "POPULAR", navLabel: "Popular Movies", cardDescription: "Movies getting the most attention now", sectionTitle: "Popular Right Now", kicker: "TRENDING WITH VIEWERS", eyebrow: "POPULAR MOVIES IN KOREA", countLabel: "popular movies", fallbackOverview: "Discover a movie attracting viewers around the world." },
     },
   },
   top_rated: {
     endpoint: "top_rated",
     hash: "top-rated",
-    navLabel: "최고평점 영화",
-    sectionTitle: "평점이 높은 영화",
-    kicker: "AUDIENCE FAVORITES",
-    eyebrow: "TOP RATED MOVIES",
-    countLabel: "최고 평점 영화",
-    fallbackOverview: {
-      "ko-KR": "관객에게 높은 평가를 받은 작품을 만나보세요.",
-      "en-US": "Discover one of the highest-rated movies on TMDB.",
+    translations: {
+      "ko-KR": { cardKicker: "최고 평점", navLabel: "최고평점 영화", cardDescription: "관객에게 높은 평가를 받은 작품", sectionTitle: "평점이 높은 영화", kicker: "관객 추천작", eyebrow: "최고 평점 영화", countLabel: "최고 평점 영화", fallbackOverview: "관객에게 높은 평가를 받은 작품을 만나보세요." },
+      "en-US": { cardKicker: "TOP RATED", navLabel: "Top Rated", cardDescription: "Movies highly rated by viewers", sectionTitle: "Top Rated Movies", kicker: "AUDIENCE FAVORITES", eyebrow: "TOP RATED MOVIES", countLabel: "top-rated movies", fallbackOverview: "Discover one of the highest-rated movies on TMDB." },
     },
   },
   upcoming: {
     endpoint: "upcoming",
     hash: "upcoming",
-    navLabel: "개봉예정 영화",
-    sectionTitle: "곧 개봉할 영화",
-    kicker: "COMING TO THEATERS",
-    eyebrow: "UPCOMING IN KOREA",
-    countLabel: "개봉 예정 영화",
-    fallbackOverview: {
-      "ko-KR": "곧 극장에서 만날 수 있는 기대작입니다.",
-      "en-US": "Get ready for a highly anticipated upcoming release.",
+    translations: {
+      "ko-KR": { cardKicker: "개봉 예정", navLabel: "개봉예정 영화", cardDescription: "곧 극장에서 만나게 될 기대작", sectionTitle: "곧 개봉할 영화", kicker: "극장 개봉 예정작", eyebrow: "대한민국 개봉 예정작", countLabel: "개봉 예정 영화", fallbackOverview: "곧 극장에서 만날 수 있는 기대작입니다." },
+      "en-US": { cardKicker: "UPCOMING", navLabel: "Upcoming", cardDescription: "Anticipated movies coming to theaters soon", sectionTitle: "Coming Soon", kicker: "COMING TO THEATERS", eyebrow: "UPCOMING IN KOREA", countLabel: "upcoming movies", fallbackOverview: "Get ready for a highly anticipated upcoming release." },
     },
   },
 };
@@ -117,6 +204,18 @@ function storeLanguage(language) {
   }
 }
 
+function t(key, replacements = {}) {
+  const template = UI_TRANSLATIONS[currentLanguage][key] || key;
+  return Object.entries(replacements).reduce(
+    (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
+    template,
+  );
+}
+
+function categoryText(categoryKey, field) {
+  return CATEGORIES[categoryKey].translations[currentLanguage][field];
+}
+
 function updateLanguageUI() {
   elements.languageButtons.forEach((button) => {
     const isActive = button.dataset.language === currentLanguage;
@@ -125,11 +224,38 @@ function updateLanguageUI() {
   });
 
   const contentLanguage = currentLanguage === "ko-KR" ? "ko" : "en";
-  elements.grid.lang = contentLanguage;
-  elements.heroTitle.lang = contentLanguage;
-  elements.heroOverview.lang = contentLanguage;
-  elements.dialogTitle.lang = contentLanguage;
-  elements.dialogOverview.lang = contentLanguage;
+  document.documentElement.lang = contentLanguage;
+  document.querySelector("#meta-description").content = t("metaDescription");
+
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach((element) => {
+    element.innerHTML = t(element.dataset.i18nHtml);
+  });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+    element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+    element.placeholder = t(element.dataset.i18nPlaceholder);
+  });
+
+  elements.categoryButtons.forEach((button) => {
+    const categoryKey = button.dataset.category;
+    button.querySelector("[data-category-kicker]").textContent = categoryText(categoryKey, "cardKicker");
+    button.querySelector("[data-category-label]").textContent = categoryText(categoryKey, "navLabel");
+    button.querySelector("[data-category-description]").textContent = categoryText(categoryKey, "cardDescription");
+  });
+
+  [elements.grid, elements.heroTitle, elements.heroOverview, elements.dialogTitle, elements.dialogOverview]
+    .forEach((element) => { element.lang = contentLanguage; });
+
+  const categoryKey = categoryFromHash();
+  if (categoryKey && !elements.movieApp.hidden) {
+    updateCategoryUI(categoryKey);
+  } else {
+    document.title = t("lobbyDocumentTitle");
+  }
 }
 
 function showSkeletons() {
@@ -174,7 +300,7 @@ function createPoster(movie) {
   const image = document.createElement("img");
   image.className = "movie-poster";
   image.src = `${IMAGE_BASE_URL}/w500${movie.poster_path}`;
-  image.alt = `${movie.title} 포스터`;
+  image.alt = t("posterAlt", { title: movie.title });
   image.loading = "lazy";
   image.decoding = "async";
   return image;
@@ -187,7 +313,7 @@ function createMovieCard(movie, index) {
   const posterButton = document.createElement("button");
   posterButton.className = "poster-button";
   posterButton.type = "button";
-  posterButton.setAttribute("aria-label", `${movie.title} 상세 정보 보기`);
+  posterButton.setAttribute("aria-label", t("detailsAriaLabel", { title: movie.title }));
   posterButton.addEventListener("click", () => openMovieDialog(movie));
 
   const rank = document.createElement("span");
@@ -196,7 +322,13 @@ function createMovieCard(movie, index) {
 
   const hover = document.createElement("span");
   hover.className = "card-hover";
-  hover.innerHTML = '<span>상세 보기</span><span class="card-hover-icon" aria-hidden="true">▶</span>';
+  const hoverLabel = document.createElement("span");
+  hoverLabel.textContent = t("cardDetails");
+  const hoverIcon = document.createElement("span");
+  hoverIcon.className = "card-hover-icon";
+  hoverIcon.setAttribute("aria-hidden", "true");
+  hoverIcon.textContent = "▶";
+  hover.append(hoverLabel, hoverIcon);
 
   posterButton.append(createPoster(movie), rank, hover);
 
@@ -216,7 +348,7 @@ function createMovieCard(movie, index) {
 
   const releaseLabel = document.createElement("span");
   releaseLabel.className = "movie-release-label";
-  releaseLabel.textContent = "RELEASE";
+  releaseLabel.textContent = t("release");
 
   const date = document.createElement("time");
   date.dateTime = movie.release_date || "";
@@ -229,13 +361,11 @@ function createMovieCard(movie, index) {
 
   const adult = document.createElement("span");
   adult.className = `movie-adult ${movie.adult ? "is-adult" : "is-non-adult"}`;
-  adult.textContent = movie.adult ? "ADULT FLAGGED" : "NOT FLAGGED";
-  adult.title = movie.adult
-    ? "TMDB에서 성인 콘텐츠로 표시한 작품입니다. 국내 관람등급과는 다릅니다."
-    : "TMDB에서 성인 콘텐츠로 표시하지 않은 작품입니다. 국내 관람등급과는 다릅니다.";
+  adult.textContent = movie.adult ? t("adultFlagged") : t("notFlagged");
+  adult.title = movie.adult ? t("adultYesTitle") : t("adultNoTitle");
   adult.setAttribute(
     "aria-label",
-    movie.adult ? "TMDB adult content flag: yes" : "TMDB adult content flag: no",
+    movie.adult ? t("adultYesAriaLabel") : t("adultNoAriaLabel"),
   );
 
   const rating = document.createElement("span");
@@ -261,18 +391,19 @@ function renderMovies(movieList) {
   });
 
   const query = elements.search.value.trim();
-  const category = CATEGORIES[currentCategory];
   elements.resultCount.textContent = query
-    ? `“${query}” 검색 결과 ${movieList.length}편`
-    : `${category.countLabel} ${movieList.length}편`;
+    ? t("searchResults", { query, count: movieList.length })
+    : t("categoryCount", {
+      category: categoryText(currentCategory, "countLabel"),
+      count: movieList.length,
+    });
 }
 
 function updateHero(movie) {
-  const category = CATEGORIES[currentCategory];
   featuredMovie = movie;
   elements.heroTitle.textContent = movie.title;
   elements.heroOverview.textContent =
-    movie.overview || category.fallbackOverview[currentLanguage];
+    movie.overview || categoryText(currentCategory, "fallbackOverview");
   elements.heroDetailButton.disabled = false;
 
   elements.heroBackdrop.classList.remove("is-loaded");
@@ -291,21 +422,15 @@ function updateHero(movie) {
 }
 
 function openMovieDialog(movie) {
-  elements.dialogLabel.textContent = CATEGORIES[currentCategory].eyebrow;
+  elements.dialogLabel.textContent = categoryText(currentCategory, "eyebrow");
   elements.dialogTitle.textContent = movie.title;
-  const missingRating = currentLanguage === "ko-KR" ? "평점 없음" : "No rating";
+  const missingRating = t("noRating");
   elements.dialogRating.textContent = `★ ${movie.vote_average ? movie.vote_average.toFixed(1) : missingRating}`;
   elements.dialogDate.textContent = formatReleaseDate(movie.release_date);
-  elements.dialogAdult.textContent = movie.adult ? "ADULT FLAGGED" : "NOT FLAGGED";
-  elements.dialogAdult.title = movie.adult
-    ? "TMDB에서 성인 콘텐츠로 표시한 작품입니다. 국내 관람등급과는 다릅니다."
-    : "TMDB에서 성인 콘텐츠로 표시하지 않은 작품입니다. 국내 관람등급과는 다릅니다.";
+  elements.dialogAdult.textContent = movie.adult ? t("adultFlagged") : t("notFlagged");
+  elements.dialogAdult.title = movie.adult ? t("adultYesTitle") : t("adultNoTitle");
   elements.dialogAdult.classList.toggle("is-adult", movie.adult);
-  elements.dialogOverview.textContent = movie.overview || (
-    currentLanguage === "ko-KR"
-      ? "등록된 줄거리가 없습니다."
-      : "No overview is available."
-  );
+  elements.dialogOverview.textContent = movie.overview || t("noOverview");
   elements.dialogBackdrop.style.backgroundImage = movie.backdrop_path
     ? `url("${IMAGE_BASE_URL}/w1280${movie.backdrop_path}")`
     : "none";
@@ -319,13 +444,11 @@ function categoryFromHash() {
 }
 
 function updateCategoryUI(categoryKey) {
-  const category = CATEGORIES[categoryKey];
-
-  elements.heroEyebrow.textContent = category.eyebrow;
-  elements.sectionTitle.textContent = category.sectionTitle;
-  elements.sectionKicker.textContent = category.kicker;
-  elements.headerCategory.textContent = category.navLabel;
-  document.title = `${category.navLabel} — NOW/SCREEN`;
+  elements.heroEyebrow.textContent = categoryText(categoryKey, "eyebrow");
+  elements.sectionTitle.textContent = categoryText(categoryKey, "sectionTitle");
+  elements.sectionKicker.textContent = categoryText(categoryKey, "kicker");
+  elements.headerCategory.textContent = categoryText(categoryKey, "navLabel");
+  document.title = `${categoryText(categoryKey, "navLabel")} — NOW/SCREEN`;
 }
 
 function showLobby() {
@@ -340,9 +463,9 @@ function showLobby() {
   elements.headerCategory.hidden = true;
   elements.lobbyReturn.hidden = true;
   elements.skipLink.href = "#lobby-options";
-  elements.skipLink.textContent = "카테고리 메뉴로 바로가기";
+  elements.skipLink.textContent = t("skipLobby");
   document.body.classList.add("is-lobby");
-  document.title = "NOW/SCREEN — 영화관 로비";
+  document.title = t("lobbyDocumentTitle");
   window.scrollTo({ top: 0, behavior: "auto" });
 }
 
@@ -353,7 +476,7 @@ function showMovieView(categoryKey) {
   elements.headerCategory.hidden = false;
   elements.lobbyReturn.hidden = false;
   elements.skipLink.href = "#movie-grid";
-  elements.skipLink.textContent = "영화 목록으로 바로가기";
+  elements.skipLink.textContent = t("skipMovies");
   document.body.classList.remove("is-lobby");
   window.scrollTo({ top: 0, behavior: "auto" });
   loadMovies(categoryKey);
@@ -381,15 +504,17 @@ async function loadMovies(categoryKey = currentCategory) {
   updateCategoryUI(currentCategory);
   featuredMovie = null;
   elements.heroDetailButton.disabled = true;
-  elements.heroTitle.textContent = category.sectionTitle;
-  elements.heroOverview.textContent = `${category.countLabel} 정보를 불러오고 있습니다.`;
+  elements.heroTitle.textContent = categoryText(currentCategory, "sectionTitle");
+  elements.heroOverview.textContent = t("loadingCategory", {
+    category: categoryText(currentCategory, "countLabel"),
+  });
   elements.heroBackdrop.classList.remove("is-loaded");
   elements.heroBackdrop.style.backgroundImage = "none";
   elements.grid.hidden = false;
   elements.emptyState.hidden = true;
   elements.errorState.hidden = true;
   elements.grid.setAttribute("aria-busy", "true");
-  elements.resultCount.textContent = "영화 정보를 불러오는 중...";
+  elements.resultCount.textContent = t("loadingMovies");
   elements.refreshButton.disabled = true;
   showSkeletons();
 
@@ -400,14 +525,16 @@ async function loadMovies(categoryKey = currentCategory) {
   try {
     const response = await fetch(url, { signal: request.signal });
     if (!response.ok) {
-      throw new Error(`TMDB 요청 오류 (${response.status})`);
+      throw new Error(t("requestError", { status: response.status }));
     }
 
     const data = await response.json();
     movies = Array.isArray(data.results) ? data.results : [];
 
     if (!movies.length) {
-      throw new Error(`표시할 ${category.countLabel}가 없습니다.`);
+      throw new Error(t("noMovies", {
+        category: categoryText(currentCategory, "countLabel"),
+      }));
     }
 
     elements.search.value = "";
@@ -420,8 +547,8 @@ async function loadMovies(categoryKey = currentCategory) {
     elements.grid.hidden = true;
     elements.grid.setAttribute("aria-busy", "false");
     elements.errorState.hidden = false;
-    elements.resultCount.textContent = "불러오기 실패";
-    elements.errorMessage.textContent = error.message || "잠시 후 다시 시도해 주세요.";
+    elements.resultCount.textContent = t("loadFailed");
+    elements.errorMessage.textContent = error.message || t("defaultError");
   } finally {
     if (activeRequest === request) {
       elements.refreshButton.disabled = false;
@@ -473,9 +600,9 @@ elements.movieListLink.addEventListener("click", (event) => {
 window.addEventListener("hashchange", handleRoute);
 
 elements.search.addEventListener("input", (event) => {
-  const query = event.target.value.trim().toLocaleLowerCase("en-US");
+  const query = event.target.value.trim().toLocaleLowerCase(currentLanguage);
   const filteredMovies = query
-    ? movies.filter((movie) => movie.title.toLocaleLowerCase("en-US").includes(query))
+    ? movies.filter((movie) => movie.title.toLocaleLowerCase(currentLanguage).includes(query))
     : movies;
 
   renderMovies(filteredMovies);
