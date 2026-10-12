@@ -1,5 +1,7 @@
 const MOVIES_API_URL = "/api/movies";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
+const DEFAULT_LANGUAGE = "en-US";
+const SUPPORTED_LANGUAGES = new Set(["ko-KR", "en-US"]);
 
 const CATEGORIES = {
   now_playing: {
@@ -10,7 +12,10 @@ const CATEGORIES = {
     kicker: "IN THEATERS NOW",
     eyebrow: "NOW PLAYING IN KOREA",
     countLabel: "현재 상영작",
-    fallbackOverview: "지금 극장에서 만나볼 수 있는 화제의 영화입니다.",
+    fallbackOverview: {
+      "ko-KR": "지금 극장에서 만나볼 수 있는 화제의 영화입니다.",
+      "en-US": "Discover a standout movie currently playing in theaters.",
+    },
   },
   popular: {
     endpoint: "popular",
@@ -20,7 +25,10 @@ const CATEGORIES = {
     kicker: "TRENDING WITH VIEWERS",
     eyebrow: "POPULAR MOVIES IN KOREA",
     countLabel: "인기 영화",
-    fallbackOverview: "지금 많은 관객이 관심 있게 보고 있는 영화입니다.",
+    fallbackOverview: {
+      "ko-KR": "지금 많은 관객이 관심 있게 보고 있는 영화입니다.",
+      "en-US": "Discover a movie attracting viewers around the world.",
+    },
   },
   top_rated: {
     endpoint: "top_rated",
@@ -30,7 +38,10 @@ const CATEGORIES = {
     kicker: "AUDIENCE FAVORITES",
     eyebrow: "TOP RATED MOVIES",
     countLabel: "최고 평점 영화",
-    fallbackOverview: "관객에게 높은 평가를 받은 작품을 만나보세요.",
+    fallbackOverview: {
+      "ko-KR": "관객에게 높은 평가를 받은 작품을 만나보세요.",
+      "en-US": "Discover one of the highest-rated movies on TMDB.",
+    },
   },
   upcoming: {
     endpoint: "upcoming",
@@ -40,7 +51,10 @@ const CATEGORIES = {
     kicker: "COMING TO THEATERS",
     eyebrow: "UPCOMING IN KOREA",
     countLabel: "개봉 예정 영화",
-    fallbackOverview: "곧 극장에서 만날 수 있는 기대작입니다.",
+    fallbackOverview: {
+      "ko-KR": "곧 극장에서 만날 수 있는 기대작입니다.",
+      "en-US": "Get ready for a highly anticipated upcoming release.",
+    },
   },
 };
 
@@ -68,6 +82,7 @@ const elements = {
   sectionTitle: document.querySelector("#section-title"),
   sectionKicker: document.querySelector("#section-kicker"),
   categoryButtons: document.querySelectorAll("[data-category]"),
+  languageButtons: document.querySelectorAll("[data-language]"),
   dialog: document.querySelector("#movie-dialog"),
   dialogClose: document.querySelector("#dialog-close"),
   dialogBackdrop: document.querySelector("#dialog-backdrop"),
@@ -82,7 +97,40 @@ const elements = {
 let movies = [];
 let featuredMovie = null;
 let currentCategory = "now_playing";
+let currentLanguage = getStoredLanguage();
 let activeRequest = null;
+
+function getStoredLanguage() {
+  try {
+    const storedLanguage = localStorage.getItem("movie-language");
+    return SUPPORTED_LANGUAGES.has(storedLanguage) ? storedLanguage : DEFAULT_LANGUAGE;
+  } catch {
+    return DEFAULT_LANGUAGE;
+  }
+}
+
+function storeLanguage(language) {
+  try {
+    localStorage.setItem("movie-language", language);
+  } catch {
+    // The language still works for this session when storage is unavailable.
+  }
+}
+
+function updateLanguageUI() {
+  elements.languageButtons.forEach((button) => {
+    const isActive = button.dataset.language === currentLanguage;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+
+  const contentLanguage = currentLanguage === "ko-KR" ? "ko" : "en";
+  elements.grid.lang = contentLanguage;
+  elements.heroTitle.lang = contentLanguage;
+  elements.heroOverview.lang = contentLanguage;
+  elements.dialogTitle.lang = contentLanguage;
+  elements.dialogOverview.lang = contentLanguage;
+}
 
 function showSkeletons() {
   elements.grid.innerHTML = "";
@@ -106,7 +154,7 @@ function formatReleaseDate(dateString) {
   const date = new Date(`${dateString}T00:00:00`);
   if (Number.isNaN(date.getTime())) return dateString;
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(currentLanguage, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -224,7 +272,7 @@ function updateHero(movie) {
   featuredMovie = movie;
   elements.heroTitle.textContent = movie.title;
   elements.heroOverview.textContent =
-    movie.overview || category.fallbackOverview;
+    movie.overview || category.fallbackOverview[currentLanguage];
   elements.heroDetailButton.disabled = false;
 
   elements.heroBackdrop.classList.remove("is-loaded");
@@ -245,14 +293,19 @@ function updateHero(movie) {
 function openMovieDialog(movie) {
   elements.dialogLabel.textContent = CATEGORIES[currentCategory].eyebrow;
   elements.dialogTitle.textContent = movie.title;
-  elements.dialogRating.textContent = `★ ${movie.vote_average ? movie.vote_average.toFixed(1) : "평점 없음"}`;
+  const missingRating = currentLanguage === "ko-KR" ? "평점 없음" : "No rating";
+  elements.dialogRating.textContent = `★ ${movie.vote_average ? movie.vote_average.toFixed(1) : missingRating}`;
   elements.dialogDate.textContent = formatReleaseDate(movie.release_date);
   elements.dialogAdult.textContent = movie.adult ? "ADULT FLAGGED" : "NOT FLAGGED";
   elements.dialogAdult.title = movie.adult
     ? "TMDB에서 성인 콘텐츠로 표시한 작품입니다. 국내 관람등급과는 다릅니다."
     : "TMDB에서 성인 콘텐츠로 표시하지 않은 작품입니다. 국내 관람등급과는 다릅니다.";
   elements.dialogAdult.classList.toggle("is-adult", movie.adult);
-  elements.dialogOverview.textContent = movie.overview || "등록된 줄거리가 없습니다.";
+  elements.dialogOverview.textContent = movie.overview || (
+    currentLanguage === "ko-KR"
+      ? "등록된 줄거리가 없습니다."
+      : "No overview is available."
+  );
   elements.dialogBackdrop.style.backgroundImage = movie.backdrop_path
     ? `url("${IMAGE_BASE_URL}/w1280${movie.backdrop_path}")`
     : "none";
@@ -342,6 +395,7 @@ async function loadMovies(categoryKey = currentCategory) {
 
   const url = new URL(MOVIES_API_URL, window.location.origin);
   url.searchParams.set("category", category.endpoint);
+  url.searchParams.set("language", currentLanguage);
 
   try {
     const response = await fetch(url, { signal: request.signal });
@@ -388,6 +442,21 @@ elements.categoryButtons.forEach((button) => {
   });
 });
 
+elements.languageButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const nextLanguage = button.dataset.language;
+    if (!SUPPORTED_LANGUAGES.has(nextLanguage) || nextLanguage === currentLanguage) return;
+
+    currentLanguage = nextLanguage;
+    storeLanguage(currentLanguage);
+    updateLanguageUI();
+
+    if (!elements.movieApp.hidden) {
+      loadMovies(currentCategory);
+    }
+  });
+});
+
 elements.lobbyReturn.addEventListener("click", () => {
   if (window.location.hash === "#lobby") {
     showLobby();
@@ -425,4 +494,5 @@ elements.retryButton.addEventListener("click", () => loadMovies(currentCategory)
 elements.refreshButton.addEventListener("click", () => loadMovies(currentCategory));
 document.querySelector("#current-year").textContent = new Date().getFullYear();
 
+updateLanguageUI();
 handleRoute();

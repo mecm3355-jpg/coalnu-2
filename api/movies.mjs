@@ -5,6 +5,7 @@ const ALLOWED_CATEGORIES = new Set([
   "top_rated",
   "upcoming",
 ]);
+const ALLOWED_LANGUAGES = new Set(["ko-KR", "en-US"]);
 
 function jsonResponse(body, status, cacheControl = "no-store") {
   return new Response(JSON.stringify(body), {
@@ -29,14 +30,19 @@ export async function GET(request) {
 
   const requestUrl = new URL(request.url);
   const category = requestUrl.searchParams.get("category") || "now_playing";
+  const language = requestUrl.searchParams.get("language") || "en-US";
 
   if (!ALLOWED_CATEGORIES.has(category)) {
     return jsonResponse({ error: "지원하지 않는 영화 카테고리입니다." }, 400);
   }
 
+  if (!ALLOWED_LANGUAGES.has(language)) {
+    return jsonResponse({ error: "지원하지 않는 언어입니다." }, 400);
+  }
+
   const tmdbUrl = new URL(`${TMDB_API_BASE_URL}/${category}`);
   tmdbUrl.searchParams.set("api_key", apiKey);
-  tmdbUrl.searchParams.set("language", "en-US");
+  tmdbUrl.searchParams.set("language", language);
   tmdbUrl.searchParams.set("region", "KR");
   tmdbUrl.searchParams.set("page", "1");
 

@@ -21,9 +21,30 @@
       </a>
 
       <p id="header-category" class="header-category" hidden></p>
-      <button id="lobby-return" class="lobby-return" type="button" hidden>
-        <span aria-hidden="true">←</span> 로비로 돌아가기
-      </button>
+      <div class="header-actions">
+        <div class="language-switcher" role="group" aria-label="영화 정보 언어">
+          <button
+            class="language-button"
+            type="button"
+            data-language="ko-KR"
+            aria-pressed="false"
+          >
+            한글
+          </button>
+          <button
+            class="language-button is-active"
+            type="button"
+            data-language="en-US"
+            aria-pressed="true"
+          >
+            English
+          </button>
+        </div>
+        <button id="lobby-return" class="lobby-return" type="button" hidden>
+          <span aria-hidden="true">←</span>
+          <span class="lobby-return-label">로비로 돌아가기</span>
+        </button>
+      </div>
     </header>
 
     <main id="lobby" class="lobby">
